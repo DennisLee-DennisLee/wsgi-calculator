@@ -44,22 +44,22 @@ To submit your homework:
 
 def add(*args):
     """ Returns a STRING with the sum of the arguments """
-    sum = str(int(args[0]) + int(args[1]))
+    sum = "<h1>" + str(int(args[0]) + int(args[1])) + "</h1>"
     return sum
 
 def subtract(*args):
     """ Returns a STRING with the difference of the arguments """
-    difference = str(int(args[0]) - int(args[1]))
+    difference = "<h1>" + str(int(args[0]) - int(args[1])) + "</h1>"
     return difference
 
 def multiply(*args):
     """ Returns a STRING with the product of the arguments """
-    product = str(int(args[0]) * int(args[1]))
+    product = "<h1>" + str(int(args[0]) * int(args[1])) + "</h1>"
     return product
 
 def divide(*args):
     """ Returns a STRING with the quotient of the arguments """
-    quotient = str(round(int(args[0]) / int(args[1])))
+    quotient = "<h1>" + str(round(int(args[0]) / int(args[1]))) + "</h1>"
     return quotient
 
 def nothing(*args):
