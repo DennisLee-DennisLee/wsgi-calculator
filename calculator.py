@@ -13,7 +13,7 @@ You'll need to support:
 
 Your users should be able to send appropriate requests and get back
 proper responses. For example, if I open a browser to your wsgi
-application at `http://localhost:8080/multiple/3/5' then the response
+application at `http://localhost:8080/multiply/3/5' then the response
 body in my browser should be `15`.
 
 Consider the following URL/Response body pairs as tests:
@@ -44,41 +44,97 @@ To submit your homework:
 
 def add(*args):
     """ Returns a STRING with the sum of the arguments """
-
-    # TODO: Fill sum with the correct value, based on the
-    # args provided.
-    sum = "0"
-
+    sum = str(int(args[0]) + int(args[1]))
     return sum
 
-# TODO: Add functions for handling more arithmetic operations.
+def subtract(*args):
+    """ Returns a STRING with the difference of the arguments """
+    difference = str(int(args[0]) - int(args[1]))
+    return difference
+
+def multiply(*args):
+    """ Returns a STRING with the product of the arguments """
+    product = str(int(args[0]) * int(args[1]))
+    return product
+
+def divide(*args):
+    """ Returns a STRING with the quotient of the arguments """
+    quotient = str(round(int(args[0]) / int(args[1])))
+    return quotient
+
+def nothing(*args):
+    """ Returns a home page with instructions """
+    text = """
+        <h1>Calculator instructions</h1>
+        <p>Use the following URL templates to get the desired math result.</p>
+        <table>
+            <tr>
+                <th>Addition</th>
+                <td>http://<i>BaseURL</i>/<b>add</b>/<i>FirstNum</i>/<i>SecondNum</i></td>
+            </tr>
+            <tr>
+                <th>Subtraction</th>
+                <td>http://<i>BaseURL</i>/<b>subtract</b>/<i>NumBeforeMinusSign</i>/<i>NumAfterMinusSign</i></td>
+            </tr>
+            <tr>
+                <th>Multiplication</th>
+                <td>http://<i>BaseURL</i>/<b>multiply</b>/<i>FirstNum</i>/<i>SecondNum</i></td>
+            </tr>
+            <tr>
+                <th>Division</th>
+                <td>http://<i>BaseURL</i>/<b>divide</b>/<i>Numerator</i>/<i>Denominator</i></td>
+            </tr>
+        </table>
+    """
+    return text
 
 def resolve_path(path):
     """
     Should return two values: a callable and an iterable of
     arguments.
     """
+    funcs = {
+        '': nothing,
+        'add': add,
+        'subtract': subtract,
+        'multiply': multiply,
+        'divide': divide
+    }
 
-    # TODO: Provide correct values for func and args. The
-    # examples provide the correct *syntax*, but you should
-    # determine the actual values of func and args using the
-    # path.
-    func = add
-    args = ['25', '32']
+    path = path.strip('/').split('/')
+    func_name = path[0]
+    args = path[1:]
+
+    try:
+        func = funcs[func_name]
+    except KeyError:
+        raise NameError
 
     return func, args
 
 def application(environ, start_response):
-    # TODO: Your application code from the book database
-    # work here as well! Remember that your application must
-    # invoke start_response(status, headers) and also return
-    # the body of the response in BYTE encoding.
-    #
-    # TODO (bonus): Add error handling for a user attempting
-    # to divide by zero.
-    pass
+    headers = [('Content-type', 'text/html')]
+    try:
+        path = environ.get('PATH_INFO', None)
+        if path is None:
+            raise NameError
+        else:
+            func, args = resolve_path(path)
+            body = func(*args)
+        status = "200 OK"
+    except NameError:
+        status = "404 Not Found"
+        body = "<h1>Not Found</h1>"
+    except Exception:
+        status = "500 Internal Server Error"
+        body = "<h1>Internal Server Error</h1>"
+        print(traceback.format_exc())
+    finally:
+        headers.append(('Content-length', str(len(body))))
+        start_response(status, headers)
+        return [body.encode('utf8')]
 
 if __name__ == '__main__':
-    # TODO: Insert the same boilerplate wsgiref simple
-    # server creation that you used in the book database.
-    pass
+    from wsgiref.simple_server import make_server
+    srv = make_server('localhost', 8080, application)
+    srv.serve_forever()
